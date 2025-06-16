@@ -6,7 +6,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import apiHelper from "../utils/ApiHelper";
 import PurchasePage from "./pages/purchase/PurchasePage";
-import HomePage from "./pages/Home/HomePage";
+import HomePage from "./pages/home/HomePage";
 import SalePage from "./pages/purchase/SalePage";
 import ItemPage from "./pages/item/ItemPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
