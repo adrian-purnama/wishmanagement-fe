@@ -90,8 +90,9 @@ function DashboardPage() {
                 <h2 className="font-semibold text-lg mb-2">💰 Money Stats</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <StatCard title="Total Spent" value={stats.total_spent} isMoney />
-                    <StatCard title="Total Gained" value={stats.total_sales_value} isMoney />
+                    <StatCard title="Total Gained" value={stats.total_sales_value - stats.total_spent} isMoney />
                     <StatCard title="Net Balance" value={stats.total_net} isMoney />
+                    {/* <StatCard title="Net Balance" value={stats.total_net} isMoney /> */}
                     <StatCard title="Shipping Fee" value={stats.fees?.shipping} isMoney />
                     <StatCard title="Admin Fee" value={stats.fees?.admin} isMoney />
                 </div>
