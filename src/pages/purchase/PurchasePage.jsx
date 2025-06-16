@@ -12,6 +12,7 @@ const PurchasePage = () => {
     const [editTarget, setEditTarget] = useState(null);
     const [confirmDelete, setConfirmDelete] = useState(null);
     const [progressMap, setProgressMap] = useState({});
+    const [loading, setLoading] = useState(false);
 
     const fetchPurchases = async () => {
         try {
@@ -43,20 +44,40 @@ const PurchasePage = () => {
         if (!file) return;
 
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("receipt", file); // ✅ backend expects "receipt"
+
+        setLoading(true); // Show loading modal
 
         try {
+            setLoading(true); // if you’re using loading UI
             const res = await apiHelper.postFormAuthorization("/purchase/upload-receipt", formData);
-            if (res.condition) {
-                setParsedItems(res.parsed); // for pre-fill
-                toast.success("Receipt parsed successfully");
+
+            if (res.condition && res.data) {
+                const { items, admin_fee, shipping_fee } = res.data;
+
+                // Format items for PurchaseDialog
+                const formatted = {
+                    store: "", // you may leave this blank for user input
+                    items: items.map((i) => ({
+                        name: i.name,
+                        quantity: i.quantity,
+                        price: i.price_per_unit,
+                    })),
+                    admin_fee,
+                    shipping_fee,
+                };
+
+                setParsedItems(formatted);
                 setShowDialog(true);
+                toast.success("Receipt parsed successfully");
             } else {
                 toast.error("Could not parse receipt");
             }
         } catch (err) {
             toast.error("Error uploading file");
             console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -70,132 +91,152 @@ const PurchasePage = () => {
         <div>
             <Navbar />
 
-        <div className="p-4 max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">📦 Purchases</h1>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => setShowDialog(true)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded"
-                    >
-                        + Add Purchase
-                    </button>
+            <div className="p-4 max-w-4xl mx-auto">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold">📦 Purchases</h1>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setShowDialog(true)}
+                            className="bg-blue-600 text-white px-4 py-2 rounded"
+                        >
+                            + Add Purchase
+                        </button>
 
-                    <label className="cursor-pointer bg-purple-600 text-white px-4 py-2 rounded">
-                        📄 Upload Receipt
-                        <input
-                            type="file"
-                            accept=".pdf,image/*"
-                            className="hidden"
-                            onChange={handleUploadReceipt}
-                        />
-                    </label>
+                        <label className="cursor-pointer bg-purple-600 text-white px-4 py-2 rounded">
+                            📄 Upload Receipt
+                            <input
+                                type="file"
+                                accept=".pdf,image/*"
+                                className="hidden"
+                                onChange={handleUploadReceipt}
+                            />
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            {showDialog && (
-                <PurchaseDialog
-                    parsedItems={parsedItems}
-                    editData={editTarget}
-                    onClose={() => {
-                        setShowDialog(false);
-                        setParsedItems([]);
-                        setEditTarget(null);
-                        fetchPurchases();
-                    }}
-                />
-            )}
+                {showDialog && (
+                    <PurchaseDialog
+                        parsedItems={parsedItems}
+                        editData={editTarget}
+                        onClose={() => {
+                            setShowDialog(false);
+                            setParsedItems([]);
+                            setEditTarget(null);
+                            fetchPurchases();
+                        }}
+                    />
+                )}
 
-            <div className="space-y-4">
-                {purchases.length === 0 && <p className="text-gray-400">No purchases yet.</p>}
+                <div className="space-y-4">
+                    {purchases.length === 0 && <p className="text-gray-400">No purchases yet.</p>}
 
-                {purchases.map((p) => (
-                    <div key={p._id} className="bg-white dark:bg-gray-800 rounded shadow p-4">
-                        <div className="flex justify-between text-sm mb-2 text-gray-500">
-                            <span>{formatDate(p.date)}</span>
-                            <span>
-                                Store: <b>{p.store}</b>
-                            </span>
-                        </div>
-
-                        <ul className="mb-2 text-sm">
-                            {p.items.map((i, idx) => (
-                                <li key={idx}>
-                                    • {i.name} — {i.quantity} × Rp.{i.price.toLocaleString()} ={" "}
-                                    <b>Rp.{(i.total ?? i.price * i.quantity).toLocaleString()}</b>
-                                </li>
-                            ))}
-                        </ul>
-
-                        <div className="text-sm text-gray-600">
-                            Admin Fee: Rp.{p.admin_fee.toLocaleString()}, Shipping: Rp.
-                            {p.shipping_fee.toLocaleString()}
-                        </div>
-
-                        <div className="font-bold mt-1">Total: Rp.{p.total.toLocaleString()}</div>
-
-                        {/* ✅ Progress bar inside the card */}
-                        {progressMap[p._id] && !progressMap[p._id].done && (
-                            <div className="mt-4">
-                                <div className="text-xs text-gray-500 mb-1">
-                                    Matching items: {progressMap[p._id].processed} /{" "}
-                                    {progressMap[p._id].total}
-                                </div>
-                                <div className="w-full bg-gray-200 h-2 rounded overflow-hidden">
-                                    <div
-                                        className="bg-green-500 h-full"
-                                        style={{
-                                            width: `${
-                                                (progressMap[p._id].processed /
-                                                    progressMap[p._id].total) *
-                                                100
-                                            }%`,
-                                            transition: "width 0.3s",
-                                        }}
-                                    ></div>
-                                </div>
+                    {purchases.map((p) => (
+                        <div key={p._id} className="bg-white dark:bg-gray-800 rounded shadow p-4">
+                            <div className="flex justify-between text-sm mb-2 text-gray-500">
+                                <span>{formatDate(p.date)}</span>
+                                <span>
+                                    Store: <b>{p.store}</b>
+                                </span>
                             </div>
-                        )}
 
-                        <div className="flex justify-end gap-4 text-sm mt-4">
-                            <button
-                                onClick={() => {
-                                    setEditTarget(p);
-                                    setShowDialog(true);
-                                }}
-                                className="text-blue-500"
-                            >
-                                ✏️ Edit
-                            </button>
-                            <button onClick={() => setConfirmDelete(p)} className="text-red-500">
-                                🗑 Delete
-                            </button>
+                            <ul className="mb-2 text-sm">
+                                {p.items.map((i, idx) => (
+                                    <li key={idx}>
+                                        • {i.name} — {i.quantity} × Rp.{i.price.toLocaleString()} ={" "}
+                                        <b>
+                                            Rp.{(i.total ?? i.price * i.quantity).toLocaleString()}
+                                        </b>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <div className="text-sm text-gray-600">
+                                Admin Fee: Rp.{p.admin_fee.toLocaleString()}, Shipping: Rp.
+                                {p.shipping_fee.toLocaleString()}
+                            </div>
+
+                            <div className="font-bold mt-1">
+                                Total: Rp.{p.total.toLocaleString()}
+                            </div>
+
+                            {/* ✅ Progress bar inside the card */}
+                            {progressMap[p._id] && !progressMap[p._id].done && (
+                                <div className="mt-4">
+                                    <div className="text-xs text-gray-500 mb-1">
+                                        Matching items: {progressMap[p._id].processed} /{" "}
+                                        {progressMap[p._id].total}
+                                    </div>
+                                    <div className="w-full bg-gray-200 h-2 rounded overflow-hidden">
+                                        <div
+                                            className="bg-green-500 h-full"
+                                            style={{
+                                                width: `${
+                                                    (progressMap[p._id].processed /
+                                                        progressMap[p._id].total) *
+                                                    100
+                                                }%`,
+                                                transition: "width 0.3s",
+                                            }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex justify-end gap-4 text-sm mt-4">
+                                <button
+                                    onClick={() => {
+                                        setEditTarget(p);
+                                        setShowDialog(true);
+                                    }}
+                                    className="text-blue-500"
+                                >
+                                    ✏️ Edit
+                                </button>
+                                <button
+                                    onClick={() => setConfirmDelete(p)}
+                                    className="text-red-500"
+                                >
+                                    🗑 Delete
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                {confirmDelete && (
+                    <ConfirmDialog
+                        title="Delete Purchase?"
+                        description={`From ${
+                            confirmDelete.store
+                        } worth Rp.${confirmDelete.total.toLocaleString()}`}
+                        onCancel={() => setConfirmDelete(null)}
+                        onConfirm={async () => {
+                            try {
+                                await apiHelper.deleteAuthorization(
+                                    `/purchase/${confirmDelete._id}`
+                                );
+                                toast.success("Purchase deleted");
+                                fetchPurchases();
+                            } catch (err) {
+                                toast.error("Failed to delete");
+                                console.error(err);
+                            } finally {
+                                setConfirmDelete(null);
+                            }
+                        }}
+                    />
+                )}
+
+                {loading && (
+                    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+                        <div className="bg-white px-6 py-4 rounded shadow-md text-center animate-fade-in-scale">
+                            <p className="text-lg font-semibold mb-2">Processing receipt…</p>
+                            <p className="text-sm text-gray-500 animate-glow">
+                                This might take a few seconds
+                            </p>
                         </div>
                     </div>
-                ))}
+                )}
             </div>
-            {confirmDelete && (
-                <ConfirmDialog
-                    title="Delete Purchase?"
-                    description={`From ${
-                        confirmDelete.store
-                    } worth Rp.${confirmDelete.total.toLocaleString()}`}
-                    onCancel={() => setConfirmDelete(null)}
-                    onConfirm={async () => {
-                        try {
-                            await apiHelper.deleteAuthorization(`/purchase/${confirmDelete._id}`);
-                            toast.success("Purchase deleted");
-                            fetchPurchases();
-                        } catch (err) {
-                            toast.error("Failed to delete");
-                            console.error(err);
-                        } finally {
-                            setConfirmDelete(null);
-                        }
-                    }}
-                />
-            )}
-        </div>
         </div>
     );
 };

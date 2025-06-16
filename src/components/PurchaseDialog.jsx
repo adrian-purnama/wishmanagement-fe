@@ -9,24 +9,28 @@ const PurchaseDialog = ({ onClose, parsedItems = [], editData = null }) => {
     const [shippingFee, setShippingFee] = useState(0);
 
 
-    useEffect(() => {
-        if (editData) {
-            setStore(editData.store);
-            setItems(editData.items.map(i => ({
+useEffect(() => {
+    if (editData) {
+        setStore(editData.store);
+        setItems(editData.items.map(i => ({
             name: i.name,
             price: i.price,
             quantity: i.quantity
-            })));
-            setAdminFee(editData.admin_fee);
-            setShippingFee(editData.shipping_fee);
-        } else if (parsedItems.length > 0) {
-            setItems(parsedItems.map(item => ({
+        })));
+        setAdminFee(editData.admin_fee);
+        setShippingFee(editData.shipping_fee);
+    } else if (parsedItems && parsedItems.items?.length > 0) {
+        setStore(parsedItems.store || "");
+        setItems(parsedItems.items.map(item => ({
             name: item.name,
             price: item.price,
             quantity: item.quantity
-            })));
-        }
-    }, [parsedItems, editData]);
+        })));
+        setAdminFee(parsedItems.admin_fee ?? 0);
+        setShippingFee(parsedItems.shipping_fee ?? 0);
+    }
+}, [parsedItems, editData]);
+
     const handleItemChange = (index, field, value) => {
         const updated = [...items];
         updated[index][field] = value;
