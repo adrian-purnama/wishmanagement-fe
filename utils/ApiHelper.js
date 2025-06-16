@@ -124,5 +124,6 @@ class ApiHelper {
     
 }
 
-const apiHelper = new ApiHelper("http://localhost:3000")
+// const apiHelper = new ApiHelper("http://localhost:3000")
+const apiHelper = new ApiHelper("http://wishmanagement-be")
 export default apiHelper
