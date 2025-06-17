@@ -3,7 +3,7 @@ import apiHelper from "../../utils/ApiHelper";
 import toast from "react-hot-toast";
 
 const PurchaseDialog = ({ onClose, parsedItems = [], editData = null }) => {
-    const [store, setStore] = useState("");
+    const [store, setStore] = useState("Shopee");
     const [items, setItems] = useState([{ name: "", price: "", quantity: "" }]);
     const [adminFee, setAdminFee] = useState(0);
     const [shippingFee, setShippingFee] = useState(0);
@@ -20,7 +20,7 @@ useEffect(() => {
         setAdminFee(editData.admin_fee);
         setShippingFee(editData.shipping_fee);
     } else if (parsedItems && parsedItems.items?.length > 0) {
-        setStore(parsedItems.store || "");
+        setStore(parsedItems.store || "Shopee");
         setItems(parsedItems.items.map(item => ({
             name: item.name,
             price: item.price,

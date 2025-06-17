@@ -35,6 +35,7 @@ const PurchasePage = () => {
                 if (res.done) clearInterval(interval);
             } catch (err) {
                 clearInterval(interval);
+                console.log(err)
             }
         }, 1000);
     };
