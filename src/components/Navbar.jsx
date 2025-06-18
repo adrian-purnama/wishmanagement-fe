@@ -1,13 +1,37 @@
 import { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { UserContext } from '../../utils/UserContext';
+import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { UserContext } from '../../utils/UserContext';
 
 const Navbar = () => {
-  const { username } = useContext(UserContext);
+  const { username, setUsername, setIsLoggedin } = useContext(UserContext);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleMenu = () => setOpen(!open);
+
+  const handleLogout = () => {
+    localStorage.removeItem('wish-token');
+    setUsername(null);
+    setIsLoggedin(false);
+    setOpen(false);
+    navigate('/');
+  };
+
+  const AuthButtons = () =>
+    username ? (
+      <div className="flex items-center gap-2">
+        <span>👤 {username}</span>
+        <button onClick={handleLogout} className="text-sm hover:underline text-red-300">
+          Logout
+        </button>
+      </div>
+    ) : (
+      <>
+        <Link to="/login" className="hover:underline">Login</Link>
+        <Link to="/register" className="hover:underline">Register</Link>
+      </>
+    );
 
   return (
     <nav className="bg-blue-600 text-white dark:bg-gray-900 shadow">
@@ -20,14 +44,7 @@ const Navbar = () => {
           <Link to="/purchase" className="hover:underline">Purchase</Link>
           <Link to="/sale" className="hover:underline">Sale</Link>
           <Link to="/item" className="hover:underline">Item</Link>
-          {username ? (
-            <span className="ml-4">👤 {username}</span>
-          ) : (
-            <>
-              <Link to="/login" className="hover:underline">Login</Link>
-              <Link to="/register" className="hover:underline">Register</Link>
-            </>
-          )}
+          <AuthButtons />
         </div>
 
         {/* Mobile Hamburger */}
@@ -44,7 +61,15 @@ const Navbar = () => {
           <Link to="/sale" onClick={toggleMenu} className="block hover:underline">Sale</Link>
           <Link to="/item" onClick={toggleMenu} className="block hover:underline">Item</Link>
           {username ? (
-            <div className="pt-2 text-white">👤 {username}</div>
+            <div className="pt-2 text-white space-y-2">
+              <div>👤 {username}</div>
+              <button
+                onClick={handleLogout}
+                className="block text-left w-full text-red-300 hover:underline"
+              >
+                Logout
+              </button>
+            </div>
           ) : (
             <>
               <Link to="/login" onClick={toggleMenu} className="block hover:underline">Login</Link>

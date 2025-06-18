@@ -165,14 +165,25 @@ const PurchasePage = () => {
                 </span>
               </div>
 
-              <ul className="mb-2 text-sm">
-                {p.items.map((i, idx) => (
-                  <li key={idx}>
-                    • {i.name} — {i.quantity} × Rp.{i.price.toLocaleString()} ={" "}
-                    <b>Rp.{(i.total ?? i.price * i.quantity).toLocaleString()}</b>
-                  </li>
-                ))}
-              </ul>
+<ul className="mb-2 space-y-2 text-sm">
+  {p.items.map((i, idx) => (
+    <li
+      key={idx}
+      className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2"
+    >
+      <span className="font-medium max-w-[40rem]">{i.name}</span>
+      
+      <div className="flex justify-between sm:justify-end sm:gap-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400 w-full sm:w-auto mt-1 sm:mt-0">
+        <span>{i.quantity} × Rp.{i.price.toLocaleString()}</span>
+        <span className="font-semibold text-right text-black dark:text-white">
+          Rp.{(i.total ?? i.price * i.quantity).toLocaleString()}
+        </span>
+      </div>
+    </li>
+  ))}
+</ul>
+
+
 
               <div className="text-sm text-gray-600 dark:text-gray-300">
                 Admin Fee: Rp.{p.admin_fee.toLocaleString()}, Shipping: Rp.

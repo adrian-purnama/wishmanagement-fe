@@ -29,8 +29,6 @@ useEffect(() => {
       if (res.condition) {
         setUsername(res.username);
         setIsLoggedin(true);
-      } else {
-        localStorage.removeItem("wish-token");
       }
     })
     .catch((err) => {

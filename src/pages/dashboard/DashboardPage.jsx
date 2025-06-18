@@ -101,173 +101,179 @@ function DashboardPage() {
             <Navbar />
 
             <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
-                <h1 className="text-2xl font-bold">📊 Dashboard</h1>
+                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-8">
+                    <h1 className="text-2xl font-bold">📊 Dashboard</h1>
 
-                {/* Range Buttons & Toggle */}
+                    {/* Range Buttons & Toggle */}
 
-                {/* 💰 Money Stats */}
-                <div>
-                    <h2 className="font-semibold text-lg mb-2">💰 Money Stats</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <StatCard title="Total Spent" value={stats.totals?.spent} isMoney />
-                        <StatCard title="Total Gained" value={stats.totals?.gained} isMoney />
-                        <StatCard title="Net Gain" value={stats.totals?.net_gain} isMoney />
-                        <StatCard title="Shipping Fee" value={stats.totals?.shipping_fee} isMoney />
-                        <StatCard title="Admin Fee" value={stats.totals?.admin_fee} isMoney />
-                    </div>
-                </div>
-
-                {/* 📦 Item Stats */}
-                <div>
-                    <h2 className="font-semibold text-lg mt-6 mb-2">📦 Item Stats</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <StatCard title="Items Bought" value={stats.totals?.items_bought} />
-                        <StatCard title="Sales Count" value={stats.totals?.sales_count} />
-
-                        <StatCard
-                            title="Most Bought"
-                            value={
-                                stats.top_item?.name
-                                    ? `${stats.top_item.name} (${stats.top_item.quantity})`
-                                    : "-"
-                            }
-                        />
-                    </div>
-                </div>
-
-                {/* 🆚 Monthly Comparison */}
-                <div>
-                    <h2 className="font-semibold text-lg mt-6 mb-2">📅 Monthly Comparison</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                        <CompareCard
-                            title="Spent"
-                            current={stats.comparison?.this_month.spent}
-                            previous={stats.comparison?.last_month.spent}
-                            isMoney
-                        />
-                        <CompareCard
-                            title="Gained"
-                            current={stats.comparison?.this_month.gained}
-                            previous={stats.comparison?.last_month.gained}
-                            isMoney
-                        />
-                        <CompareCard
-                            title="Net Gain"
-                            current={stats.comparison?.this_month.net_gain}
-                            previous={stats.comparison?.last_month.net_gain}
-                            isMoney
-                        />
-                    </div>
-                </div>
-
-                <div className="flex gap-2 mb-4 flex-wrap">
-                    {Object.entries(timePresets).map(([key, label]) => (
-                        <button
-                            key={key}
-                            onClick={() => setRange(key)}
-                            className={`px-3 py-1 rounded border text-sm ${
-                                range === key
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                            }`}
-                        >
-                            {label}
-                        </button>
-                    ))}
-                    <button
-                        onClick={() => setChartType(chartType === "bar" ? "line" : "bar")}
-                        className="px-3 py-1 text-sm border rounded bg-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                    >
-                        Toggle Chart Type
-                    </button>
-                </div>
-
-                {/* 📈 Chart */}
-                <div className="w-full max-w-6xl mx-auto bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
-                    <div className="overflow-x-auto">
-                        <div className="relative min-w-[600px] w-full h-[500px]">
-                            <ChartComponent
-                                data={{
-                                    labels: fullTrend.map((d) => d.date),
-                                    datasets: [
-                                        {
-                                            type: chartType,
-                                            label: "Spent",
-                                            data: fullTrend.map((d) => d.spent),
-                                            borderColor: "rgba(255, 99, 132, 1)",
-                                            backgroundColor:
-                                                chartType === "bar"
-                                                    ? "rgba(255, 99, 132, 0.6)"
-                                                    : undefined,
-                                            yAxisID: "y",
-                                            fill: false,
-                                            tension: 0.3,
-                                        },
-                                        {
-                                            type: chartType,
-                                            label: "Gained",
-                                            data: fullTrend.map((d) => d.gained),
-                                            borderColor: "rgba(75, 192, 192, 1)",
-                                            backgroundColor:
-                                                chartType === "bar"
-                                                    ? "rgba(75, 192, 192, 0.6)"
-                                                    : undefined,
-                                            yAxisID: "y",
-                                            fill: false,
-                                            tension: 0.3,
-                                        },
-                                        {
-                                            type: chartType,
-                                            label: "Items Bought",
-                                            data: fullTrend.map((d) => d.items),
-                                            borderColor: "rgba(54, 162, 235, 1)",
-                                            backgroundColor:
-                                                chartType === "bar"
-                                                    ? "rgba(54, 162, 235, 0.6)"
-                                                    : undefined,
-                                            yAxisID: "y1",
-                                            fill: false,
-                                            tension: 0.3,
-                                        },
-                                    ],
-                                }}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    layout: { padding: 0 },
-                                    plugins: {
-                                        legend: {
-                                            position: "top",
-                                            labels: { font: { size: 12 } },
-                                        },
-                                        title: { display: false },
-                                    },
-                                    scales: {
-                                        x: {
-                                            ticks: {
-                                                maxRotation: 30,
-                                                minRotation: 0,
-                                                autoSkip: true,
-                                                maxTicksLimit: 10,
-                                            },
-                                            title: { display: true, text: "Date" },
-                                        },
-                                        y: {
-                                            type: "linear",
-                                            position: "left",
-                                            title: { display: true, text: "IDR" },
-                                            beginAtZero: true,
-                                        },
-                                        y1: {
-                                            type: "linear",
-                                            position: "right",
-                                            title: { display: true, text: "Items Bought" },
-                                            grid: { drawOnChartArea: false },
-                                            beginAtZero: true,
-                                        },
-                                    },
-                                }}
+                    {/* 💰 Money Stats */}
+                    <div>
+                        <h2 className="font-semibold text-lg mb-2">💰 Money Stats</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <StatCard title="Total Spent" value={stats.totals?.spent} isMoney />
+                            <StatCard title="Total Gained" value={stats.totals?.gained} isMoney />
+                            <StatCard title="Net Gain" value={stats.totals?.net_gain} isMoney />
+                            <StatCard
+                                title="Shipping Fee"
+                                value={stats.totals?.shipping_fee}
+                                isMoney
                             />
+                            <StatCard title="Admin Fee" value={stats.totals?.admin_fee} isMoney />
+                        </div>
+                    </div>
+
+                    {/* 📦 Item Stats */}
+                    <div>
+                        <h2 className="font-semibold text-lg mt-6 mb-2">📦 Item Stats</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <StatCard title="Items Bought" value={stats.totals?.items_bought} />
+                            <StatCard title="Sales Count" value={stats.totals?.sales_count} />
+
+                            <StatCard
+                                title="Most Bought"
+                                value={
+                                    stats.top_item?.name
+                                        ? `${stats.top_item.name} (${stats.top_item.quantity})`
+                                        : "-"
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    {/* 🆚 Monthly Comparison */}
+                    <div>
+                        <h2 className="font-semibold text-lg mt-6 mb-2">📅 Monthly Comparison</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                            <CompareCard
+                                title="Spent"
+                                current={stats.comparison?.this_month.spent}
+                                previous={stats.comparison?.last_month.spent}
+                                isMoney
+                            />
+                            <CompareCard
+                                title="Gained"
+                                current={stats.comparison?.this_month.gained}
+                                previous={stats.comparison?.last_month.gained}
+                                isMoney
+                            />
+                            <CompareCard
+                                title="Net Gain"
+                                current={stats.comparison?.this_month.net_gain}
+                                previous={stats.comparison?.last_month.net_gain}
+                                isMoney
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 mb-4 flex-wrap">
+                        {Object.entries(timePresets).map(([key, label]) => (
+                            <button
+                                key={key}
+                                onClick={() => setRange(key)}
+                                className={`px-3 py-1 rounded border text-sm ${
+                                    range === key
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => setChartType(chartType === "bar" ? "line" : "bar")}
+                            className="px-3 py-1 text-sm border rounded bg-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                        >
+                            Toggle Chart Type
+                        </button>
+                    </div>
+
+                    {/* 📈 Chart */}
+                    <div className="w-full max-w-6xl mx-auto bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
+                        <div className="overflow-x-auto">
+                            <div className="relative min-w-[600px] w-full h-[500px]">
+                                <ChartComponent
+                                    data={{
+                                        labels: fullTrend.map((d) => d.date),
+                                        datasets: [
+                                            {
+                                                type: chartType,
+                                                label: "Spent",
+                                                data: fullTrend.map((d) => d.spent),
+                                                borderColor: "rgba(255, 99, 132, 1)",
+                                                backgroundColor:
+                                                    chartType === "bar"
+                                                        ? "rgba(255, 99, 132, 0.6)"
+                                                        : undefined,
+                                                yAxisID: "y",
+                                                fill: false,
+                                                tension: 0.3,
+                                            },
+                                            {
+                                                type: chartType,
+                                                label: "Gained",
+                                                data: fullTrend.map((d) => d.gained),
+                                                borderColor: "rgba(75, 192, 192, 1)",
+                                                backgroundColor:
+                                                    chartType === "bar"
+                                                        ? "rgba(75, 192, 192, 0.6)"
+                                                        : undefined,
+                                                yAxisID: "y",
+                                                fill: false,
+                                                tension: 0.3,
+                                            },
+                                            {
+                                                type: chartType,
+                                                label: "Items Bought",
+                                                data: fullTrend.map((d) => d.items),
+                                                borderColor: "rgba(54, 162, 235, 1)",
+                                                backgroundColor:
+                                                    chartType === "bar"
+                                                        ? "rgba(54, 162, 235, 0.6)"
+                                                        : undefined,
+                                                yAxisID: "y1",
+                                                fill: false,
+                                                tension: 0.3,
+                                            },
+                                        ],
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        layout: { padding: 0 },
+                                        plugins: {
+                                            legend: {
+                                                position: "top",
+                                                labels: { font: { size: 12 } },
+                                            },
+                                            title: { display: false },
+                                        },
+                                        scales: {
+                                            x: {
+                                                ticks: {
+                                                    maxRotation: 30,
+                                                    minRotation: 0,
+                                                    autoSkip: true,
+                                                    maxTicksLimit: 10,
+                                                },
+                                                title: { display: true, text: "Date" },
+                                            },
+                                            y: {
+                                                type: "linear",
+                                                position: "left",
+                                                title: { display: true, text: "IDR" },
+                                                beginAtZero: true,
+                                            },
+                                            y1: {
+                                                type: "linear",
+                                                position: "right",
+                                                title: { display: true, text: "Items Bought" },
+                                                grid: { drawOnChartArea: false },
+                                                beginAtZero: true,
+                                            },
+                                        },
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
