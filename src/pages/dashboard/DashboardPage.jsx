@@ -119,16 +119,16 @@ function DashboardPage() {
                                 isMoney
                             />
                             <StatCard title="Admin Fee" value={stats.totals?.admin_fee} isMoney />
+                            <StatCard title="Sales Count" value={stats.totals?.sales_count} />
                         </div>
                     </div>
 
                     {/* 📦 Item Stats */}
                     <div>
                         <h2 className="font-semibold text-lg mt-6 mb-2">📦 Item Stats</h2>
+                        <small className="text-amber-300">🚫 Not Reliable</small>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <StatCard title="Items Bought" value={stats.totals?.items_bought} />
-                            <StatCard title="Sales Count" value={stats.totals?.sales_count} />
-
                             <StatCard
                                 title="Most Bought"
                                 value={
