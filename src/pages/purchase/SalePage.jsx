@@ -10,16 +10,50 @@ const SalePage = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+const [page, setPage] = useState(1);
+const [hasMore, setHasMore] = useState(true);
+const [loadingMore, setLoadingMore] = useState(false);
+const limit = 10;
 
-  const fetchSales = async () => {
-    try {
-      const res = await apiHelper.getAuthorization("/sale/all");
-      setSales(res || []);
-    } catch (err) {
-      toast.error("Failed to fetch sales");
-      console.error(err);
+
+
+const fetchSales = async (nextPage = 1) => {
+  try {
+    setLoadingMore(true);
+    const res = await apiHelper.getAuthorization(`/sale/all?page=${nextPage}&limit=${limit}`);
+    const newData = res.sales || [];
+
+    if (nextPage === 1) {
+      setSales(newData);
+    } else {
+      setSales((prev) => [...prev, ...newData]);
+    }
+
+    setHasMore(newData.length === limit);
+    setPage(nextPage);
+  } catch (err) {
+    toast.error("Failed to fetch sales");
+    console.error(err);
+  } finally {
+    setLoadingMore(false);
+  }
+};
+
+useEffect(() => {
+  const handleScroll = () => {
+    const scrollTop = window.innerHeight + document.documentElement.scrollTop;
+    const offsetHeight = document.documentElement.offsetHeight;
+
+    if (scrollTop + 100 >= offsetHeight && hasMore && !loadingMore) {
+      fetchSales(page + 1);
     }
   };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, [page, hasMore, loadingMore]);
+
+
 
   useEffect(() => {
     fetchSales();
@@ -96,6 +130,11 @@ const SalePage = () => {
           </div>
         ))}
       </div>
+
+      {loadingMore && (
+  <div className="text-center text-sm text-gray-400 py-4">Loading more sales...</div>
+)}
+
 
       {confirmDelete && (
         <ConfirmDialog

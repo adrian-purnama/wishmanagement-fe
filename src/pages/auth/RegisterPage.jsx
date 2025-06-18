@@ -58,6 +58,7 @@ const RegisterPage = () => {
       <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
         Register
       </button>
+      <h1 className="font-bold text-red-400">Registration is closed, contact Administrator for further info</h1>
     </form>
   );
 };

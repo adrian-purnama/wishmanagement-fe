@@ -13,19 +13,53 @@ const PurchasePage = () => {
     const [confirmDelete, setConfirmDelete] = useState(null);
     const [progressMap, setProgressMap] = useState({});
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const limit = 10;
 
-    const fetchPurchases = async () => {
+    const fetchPurchases = async (nextPage = 1) => {
         try {
-            const res = await apiHelper.getAuthorization("/purchase/all");
-            setPurchases(res.purchases || []);
+            setLoadingMore(true);
+            const res = await apiHelper.getAuthorization(
+                `/purchase/all?page=${nextPage}&limit=${limit}`
+            );
+            const newData = res.purchases || [];
 
-            // Start polling for each purchase progress
-            res.purchases?.forEach((p) => pollProgress(p._id));
+            if (nextPage === 1) {
+                setPurchases(newData);
+            } else {
+                setPurchases((prev) => [...prev, ...newData]);
+            }
+
+            setHasMore(newData.length === limit);
+            setPage(nextPage);
         } catch (err) {
             toast.error("Failed to fetch purchases");
             console.error(err);
+        } finally {
+            setLoadingMore(false);
         }
     };
+
+    useEffect(() => {
+        fetchPurchases(1);
+    }, []);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.innerHeight + document.documentElement.scrollTop;
+            const offsetHeight = document.documentElement.offsetHeight;
+
+            if (scrollTop + 100 >= offsetHeight && hasMore && !loadingMore) {
+                fetchPurchases(page + 1);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [page, hasMore, loadingMore]);
+
     const pollProgress = (id) => {
         const interval = setInterval(async () => {
             try {
@@ -35,7 +69,7 @@ const PurchasePage = () => {
                 if (res.done) clearInterval(interval);
             } catch (err) {
                 clearInterval(interval);
-                console.log(err)
+                console.log(err);
             }
         }, 1000);
     };
@@ -203,6 +237,13 @@ const PurchasePage = () => {
                         </div>
                     ))}
                 </div>
+
+                {loadingMore && (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                        Loading more purchases...
+                    </div>
+                )}
+
                 {confirmDelete && (
                     <ConfirmDialog
                         title="Delete Purchase?"
