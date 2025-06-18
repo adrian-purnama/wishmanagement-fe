@@ -31,35 +31,48 @@ const RegisterPage = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-10">
-      <h2 className="text-xl font-bold mb-4">Register</h2>
-      <input
-        className="block w-full border p-2 mb-3"
-        name="username"
-        placeholder="Username"
-        value={form.username}
-        onChange={handleChange}
-      />
-      <input
-        className="block w-full border p-2 mb-3"
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-      />
-      <input
-        className="block w-full border p-2 mb-3"
-        name="password"
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-      />
-      <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
-        Register
-      </button>
-      <h1 className="font-bold text-red-400">Registration is closed, contact Administrator for further info</h1>
-    </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm bg-white dark:bg-gray-800 shadow-md rounded p-6"
+      >
+        <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">Register</h2>
+
+        <input
+          className="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 mb-3 rounded"
+          name="username"
+          placeholder="Username"
+          value={form.username}
+          onChange={handleChange}
+        />
+        <input
+          className="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 mb-3 rounded"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
+        <input
+          className="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 mb-4 rounded"
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
+        >
+          Register
+        </button>
+
+        <p className="mt-4 text-sm font-semibold text-red-500 dark:text-red-400 text-center">
+          🚫 Registration is closed. Contact Administrator for further info.
+        </p>
+      </form>
+    </div>
   );
 };
 

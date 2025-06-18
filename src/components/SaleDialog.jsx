@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import apiHelper from "../../utils/ApiHelper";
 
-
 const SaleDialog = ({ onClose, editData = null }) => {
   const [amount, setAmount] = useState("");
   const [channel, setChannel] = useState("Shopee");
   const [note, setNote] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
 
- useEffect(() => {
+  useEffect(() => {
     if (editData) {
       setAmount(editData.amount);
       setChannel(editData.channel || "Shopee");
@@ -45,21 +44,23 @@ const SaleDialog = ({ onClose, editData = null }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Add Sale</h2>
+      <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-6 rounded-lg w-full max-w-md shadow-lg">
+        <h2 className="text-xl font-bold mb-4">
+          {editData ? "Edit Sale" : "Add Sale"}
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="border w-full p-2"
+            className="border w-full p-2 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded"
           />
           <input
             type="number"
             placeholder="Amount (e.g. 75000)"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="border w-full p-2"
+            className="border w-full p-2 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded"
             required
           />
           <input
@@ -67,26 +68,26 @@ const SaleDialog = ({ onClose, editData = null }) => {
             placeholder="Channel (e.g. Shopee)"
             value={channel}
             onChange={(e) => setChannel(e.target.value)}
-            className="border w-full p-2"
+            className="border w-full p-2 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded"
           />
           <input
             type="text"
             placeholder="Note (optional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="border w-full p-2"
+            className="border w-full p-2 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded"
           />
           <div className="flex justify-between">
             <button
               type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
             >
               Save
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-500"
+              className="text-gray-600 dark:text-gray-300 hover:underline"
             >
               Cancel
             </button>

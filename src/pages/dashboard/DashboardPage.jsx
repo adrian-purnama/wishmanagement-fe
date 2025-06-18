@@ -56,7 +56,6 @@ const getStartDate = (range) => {
     return start;
 };
 
-
 function DashboardPage() {
     const [stats, setStats] = useState(null);
     const [range, setRange] = useState("7d");
@@ -101,7 +100,7 @@ function DashboardPage() {
         <div>
             <Navbar />
 
-            <div className="p-6 space-y-6">
+            <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
                 <h1 className="text-2xl font-bold">📊 Dashboard</h1>
 
                 {/* Range Buttons & Toggle */}
@@ -167,7 +166,9 @@ function DashboardPage() {
                             key={key}
                             onClick={() => setRange(key)}
                             className={`px-3 py-1 rounded border text-sm ${
-                                range === key ? "bg-blue-600 text-white" : "bg-gray-100"
+                                range === key
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             }`}
                         >
                             {label}
@@ -175,14 +176,14 @@ function DashboardPage() {
                     ))}
                     <button
                         onClick={() => setChartType(chartType === "bar" ? "line" : "bar")}
-                        className="px-3 py-1 text-sm border rounded bg-gray-200"
+                        className="px-3 py-1 text-sm border rounded bg-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     >
                         Toggle Chart Type
                     </button>
                 </div>
 
                 {/* 📈 Chart */}
-                <div className="w-full max-w-6xl mx-auto bg-white dark:bg-gray-800 p-4 rounded shadow">
+                <div className="w-full max-w-6xl mx-auto bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
                     <div className="overflow-x-auto">
                         <div className="relative min-w-[600px] w-full h-[500px]">
                             <ChartComponent
@@ -281,8 +282,8 @@ function StatCard({ title, value, isMoney }) {
         value == null ? "-" : isMoney ? `Rp.${Number(value).toLocaleString("id-ID")}` : value;
 
     return (
-        <div className="p-3 bg-white dark:bg-gray-800 rounded shadow">
-            <div className="text-gray-500">{title}</div>
+        <div className="p-3 bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+            <div className="text-gray-600 dark:text-gray-400">{title}</div>
             <div className="text-xl font-semibold">{displayValue}</div>
         </div>
     );
@@ -304,15 +305,17 @@ function CompareCard({ title, current = 0, previous = 0, isMoney }) {
         isMoney ? `Rp.${Number(val).toLocaleString("id-ID")}` : Number(val).toLocaleString("id-ID");
 
     return (
-        <div className="p-3 bg-white dark:bg-gray-800 rounded shadow">
-            <div className="text-gray-500">{title}</div>
+        <div className="p-3 bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700">
+            <div className="text-gray-600 dark:text-gray-400">{title}</div>
             <div className="text-xl font-semibold">
                 {formatted(current)}{" "}
-                <span className={isPositive ? "text-green-600" : "text-red-500"}>
+                <span className={isPositive ? "text-green-500" : "text-red-400"}>
                     ({arrow} {Math.abs(delta).toFixed(1)}%)
                 </span>
             </div>
-            <div className="text-xs text-gray-400">Last month: {formatted(previous)}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+                Last month: {formatted(previous)}
+            </div>
         </div>
     );
 }

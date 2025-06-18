@@ -6,12 +6,14 @@ const HomePage = () => {
   const { username } = useContext(UserContext);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
       <Navbar />
       <div className="max-w-4xl mx-auto mt-10 px-4">
         <h1 className="text-3xl font-bold mb-4">Welcome to the Inventory Tracker</h1>
         {username ? (
-          <p className="text-lg mb-4">Hello, <strong>{username}</strong> 👋</p>
+          <p className="text-lg mb-4">
+            Hello, <strong>{username}</strong> 👋
+          </p>
         ) : (
           <p className="text-lg mb-4">Please log in to access your data.</p>
         )}
