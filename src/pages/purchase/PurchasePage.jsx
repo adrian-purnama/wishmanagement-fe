@@ -156,14 +156,16 @@ const PurchasePage = () => {
                 {showDialog && (
                     <PurchaseDialog
                         parsedItems={parsedItems}
-                        editData={editTarget}
-                        onClose={(newId) => {
+                        editData={editTarget && editTarget._id ? editTarget : null}
+                        onClose={(maybeId) => {
                             setShowDialog(false);
                             setParsedItems([]);
                             setEditTarget(null);
                             fetchPurchases();
 
-                            if (newId) pollProgress(newId);
+                            if (typeof maybeId === "string") {
+                                pollProgress(maybeId);
+                            }
                         }}
                     />
                 )}
