@@ -4,6 +4,8 @@ import PurchaseDialog from "../../components/PurchaseDialog";
 import apiHelper from "../../../utils/ApiHelper";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import Navbar from "../../components/Navbar";
+import StackedPurchaseDialog from "../../components/StackedPurchaseDialog";
+import ResyncProgressBar from "../../components/ResyncProgressBar";
 
 const PurchasePage = () => {
     const [purchases, setPurchases] = useState([]);
@@ -16,6 +18,9 @@ const PurchasePage = () => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [parsedItemsList, setParsedItemsList] = useState([]);
+    const [showMultiDialog, setShowMultiDialog] = useState(false);
+
     const limit = 10;
 
     const fetchPurchases = async (nextPage = 1) => {
@@ -74,38 +79,44 @@ const PurchasePage = () => {
     };
 
     const handleUploadReceipt = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
 
         const formData = new FormData();
-        formData.append("receipt", file);
+        files.forEach((file) => formData.append("receipts", file));
 
         setLoading(true);
 
         try {
             const res = await apiHelper.postFormAuthorization("/purchase/upload-receipt", formData);
-            if (res.condition && res.data) {
-                const { items, admin_fee, shipping_fee } = res.data;
+            if (res.condition && res.results) {
+                const formatted = res.results
+                    .filter((r) => !r.error)
+                    .map((r) => ({
+                        store: r.store || "",
+                        admin_fee: r.admin_fee ?? 0,
+                        shipping_fee: r.shipping_fee ?? 0,
+                        items: r.items.map((i) => ({
+                            name: i.name,
+                            price: i.price_per_unit,
+                            quantity: i.quantity,
+                        })),
+                    }));
 
-                const formatted = {
-                    store: "",
-                    items: items.map((i) => ({
-                        name: i.name,
-                        quantity: i.quantity,
-                        price: i.price_per_unit,
-                    })),
-                    admin_fee,
-                    shipping_fee,
-                };
-
-                setParsedItems(formatted);
-                setShowDialog(true);
-                toast.success("Receipt parsed successfully");
+                if (formatted.length === 1) {
+                    setParsedItems(formatted[0]);
+                    setShowDialog(true);
+                } else if (formatted.length > 1) {
+                    setParsedItemsList(formatted);
+                    setShowMultiDialog(true);
+                } else {
+                    toast.error("No valid receipts parsed.");
+                }
             } else {
-                toast.error("Could not parse receipt");
+                toast.error("Could not parse receipts");
             }
         } catch (err) {
-            toast.error("Error uploading file");
+            toast.error("Error uploading receipts");
             console.error(err);
         } finally {
             setLoading(false);
@@ -132,6 +143,7 @@ const PurchasePage = () => {
                             📄 Upload Receipt
                             <input
                                 type="file"
+                                multiple
                                 accept=".pdf,image/*"
                                 className="hidden"
                                 onChange={handleUploadReceipt}
@@ -139,6 +151,7 @@ const PurchasePage = () => {
                         </label>
                     </div>
                 </div>
+                <ResyncProgressBar />
 
                 {showDialog && (
                     <PurchaseDialog
@@ -150,8 +163,20 @@ const PurchasePage = () => {
                             setEditTarget(null);
                             fetchPurchases();
 
-                            if (newId) pollProgress(newId); 
+                            if (newId) pollProgress(newId);
                         }}
+                    />
+                )}
+
+                {showMultiDialog && (
+                    <StackedPurchaseDialog
+                        items={parsedItemsList}
+                        onSubmitSuccess={(finalIndex) => {
+                            toast.success("✅ All receipts submitted");
+                            setShowMultiDialog(false);
+                            fetchPurchases();
+                        }}
+                        onCancel={() => setShowMultiDialog(false)}
                     />
                 )}
 

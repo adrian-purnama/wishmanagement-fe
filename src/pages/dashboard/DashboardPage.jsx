@@ -12,6 +12,7 @@ import {
     Legend,
 } from "chart.js";
 import Navbar from "../../components/Navbar";
+import ResyncProgressBar from "../../components/ResyncProgressBar";
 
 ChartJS.register(
     BarElement,
@@ -103,6 +104,7 @@ function DashboardPage() {
             <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-8">
                     <h1 className="text-2xl font-bold">📊 Dashboard</h1>
+                    <ResyncProgressBar />
 
                     {/* Range Buttons & Toggle */}
 
