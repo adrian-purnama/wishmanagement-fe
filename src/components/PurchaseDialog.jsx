@@ -14,6 +14,18 @@ const PurchaseDialog = ({
     const [items, setItems] = useState([{ name: "", price: "", quantity: "" }]);
     const [adminFee, setAdminFee] = useState(0);
     const [shippingFee, setShippingFee] = useState(0);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [bypassWarning, setBypassWarning] = useState(false);
+
+    const formatNumber = (num) => Number(num || 0).toLocaleString("id-ID");
+    const unformatNumber = (val) => (val || "").toString().replace(/[^\d]/g, "");
+
+    useEffect(() => {
+        const bypassUntil = localStorage.getItem("purchaseBypassUntil");
+        if (bypassUntil && new Date(bypassUntil) > new Date()) {
+            setBypassWarning(true);
+        }
+    }, []);
 
     useEffect(() => {
         if (editData) {
@@ -54,7 +66,7 @@ const PurchaseDialog = ({
         (+adminFee || 0) +
         (+shippingFee || 0);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e, override = false) => {
         e.preventDefault();
         if (disabled) return;
 
@@ -63,15 +75,29 @@ const PurchaseDialog = ({
             return toast.error("Fill all required fields");
         }
 
+        const rawItems = validItems.map((i) => ({
+            ...i,
+            price: parseFloat(unformatNumber(i.price)),
+            quantity: parseInt(i.quantity),
+        }));
+
+        if (!override && !bypassWarning) {
+            const outOfRange = rawItems.some((i) => {
+                const total = i.price * i.quantity;
+                return total < 10000 || total > 900000;
+            });
+
+            if (outOfRange) {
+                setShowConfirm(true);
+                return;
+            }
+        }
+
         const payload = {
             store,
-            items: validItems.map((i) => ({
-                ...i,
-                price: parseFloat(i.price),
-                quantity: parseInt(i.quantity),
-            })),
-            admin_fee: parseFloat(adminFee),
-            shipping_fee: parseFloat(shippingFee),
+            items: rawItems,
+            admin_fee: parseFloat(unformatNumber(adminFee)) || 0,
+            shipping_fee: parseFloat(unformatNumber(shippingFee))  || 0,
         };
 
         try {
@@ -90,9 +116,18 @@ const PurchaseDialog = ({
         }
     };
 
+    const suppressWarningFor24Hours = () => {
+        const until = new Date();
+        until.setHours(until.getHours() + 24);
+        localStorage.setItem("purchaseBypassUntil", until.toISOString());
+        setBypassWarning(true);
+        setShowConfirm(false);
+    };
+
     return (
         <>
             {!noOverlay && <div className="fixed inset-0 bg-black/60 z-40" />}
+
             <div
                 className={`${
                     noOverlay ? "" : "fixed inset-0"
@@ -130,18 +165,24 @@ const PurchaseDialog = ({
                                     required
                                 />
                                 <input
-                                    disabled={disabled}
-                                    type="number"
+                                    type="text"
                                     className={`w-24 p-2 rounded border ${
                                         disabled
                                             ? "bg-gray-100 text-gray-500"
                                             : "bg-white dark:bg-gray-700 dark:border-gray-600"
                                     }`}
-                                    placeholder="Price"
-                                    value={item.price}
-                                    onChange={(e) => handleItemChange(idx, "price", e.target.value)}
+                                    disabled={disabled}
+                                    value={formatNumber(item.price)}
+                                    onChange={(e) =>
+                                        handleItemChange(
+                                            idx,
+                                            "price",
+                                            unformatNumber(e.target.value)
+                                        )
+                                    }
                                     required
                                 />
+
                                 <input
                                     disabled={disabled}
                                     type="number"
@@ -184,28 +225,28 @@ const PurchaseDialog = ({
                                 <label className="block text-sm mb-1">Admin / Tax Fee</label>
                                 <input
                                     disabled={disabled}
-                                    type="number"
+                                    type="text"
                                     className={`w-full p-2 rounded border ${
                                         disabled
                                             ? "bg-gray-100 text-gray-500"
                                             : "bg-white dark:bg-gray-700 dark:border-gray-600"
                                     }`}
-                                    value={adminFee}
-                                    onChange={(e) => setAdminFee(e.target.value)}
+                                    value={formatNumber(adminFee)}
+                                    onChange={(e) => setAdminFee(unformatNumber(e.target.value))}
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm mb-1">Shipping Fee</label>
                                 <input
                                     disabled={disabled}
-                                    type="number"
+                                    type="text"
                                     className={`w-full p-2 rounded border ${
                                         disabled
                                             ? "bg-gray-100 text-gray-500"
                                             : "bg-white dark:bg-gray-700 dark:border-gray-600"
                                     }`}
-                                    value={shippingFee}
-                                    onChange={(e) => setShippingFee(e.target.value)}
+                                    value={formatNumber(shippingFee)}
+                                    onChange={(e) => setShippingFee(unformatNumber(e.target.value))}
                                 />
                             </div>
                         </div>
@@ -238,6 +279,37 @@ const PurchaseDialog = ({
                     </form>
                 </div>
             </div>
+            {showConfirm && (
+                <div className="absolute inset-0 bg-black/70 flex justify-center items-center z-50">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm text-center">
+                        <h3 className="text-lg font-semibold mb-4">⚠️ Are you sure?</h3>
+                        <p className="mb-4">
+                            Some item totals are outside the normal range (10,000 – 900,000).
+                            Proceed anyway?
+                        </p>
+                        <div className="flex flex-col space-y-2">
+                            <button
+                                onClick={(e) => handleSubmit(e, true)}
+                                className="bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600"
+                            >
+                                Yes, continue
+                            </button>
+                            <button
+                                onClick={suppressWarningFor24Hours}
+                                className="text-sm text-gray-500 hover:underline"
+                            >
+                                Don’t show again for 24 hours
+                            </button>
+                            <button
+                                onClick={() => setShowConfirm(false)}
+                                className="text-sm text-gray-400 hover:underline"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
