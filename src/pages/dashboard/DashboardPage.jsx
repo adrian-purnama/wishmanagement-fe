@@ -13,6 +13,8 @@ import {
 } from "chart.js";
 import Navbar from "../../components/Navbar";
 import ResyncProgressBar from "../../components/ResyncProgressBar";
+import toast from "react-hot-toast";
+import AskAiDialog from "../../components/AskAiDialog";
 
 ChartJS.register(
     BarElement,
@@ -62,6 +64,20 @@ function DashboardPage() {
     const [range, setRange] = useState("7d");
     const [chartType, setChartType] = useState("bar");
 
+    const handleResync = async () => {
+        try {
+            const res = await apiHelper.postAuthorization("/item/resync-items");
+            if (res.condition) {
+            } else {
+                toast.error("Resync failed");
+            }
+            window.location.reload();
+        } catch (err) {
+            toast.error("Error during resync");
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
         apiHelper
             .getAuthorization(`/dashboard?range=${range}`)
@@ -104,6 +120,7 @@ function DashboardPage() {
             <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-8">
                     <h1 className="text-2xl font-bold">📊 Dashboard</h1>
+                    <AskAiDialog />
                     <ResyncProgressBar />
 
                     {/* Range Buttons & Toggle */}
@@ -127,8 +144,15 @@ function DashboardPage() {
 
                     {/* 📦 Item Stats */}
                     <div>
-                        <h2 className="font-semibold text-lg mt-6 mb-2">📦 Item Stats</h2>
-                        <small className="text-amber-300">🚫 Not Reliable</small>
+                        <div className="flex gap-2 items-center  mt-6 mb-2">
+                            <h2 className="font-semibold text-lg">📦 Item Stats</h2>
+                            <button
+                                onClick={handleResync}
+                                className='ml-4 px-3 py-1 text-xs rounded bg-blue-500 text-white h-[2.5rem]'
+                            >
+                                🔁 Resync Items
+                            </button>
+                        </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <StatCard title="Items Bought" value={stats.totals?.items_bought} />
                             <StatCard
