@@ -10,6 +10,7 @@ import HomePage from "./pages/home/HomePage";
 import SalePage from "./pages/purchase/SalePage";
 import ItemPage from "./pages/item/ItemPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import TikTokPage from "./pages/dashboard/TiktokPage";
 
 function App() {
   const { setUsername, setIsLoggedin } = useContext(UserContext);
@@ -54,6 +55,7 @@ useEffect(() => {
         <Route path="/sale" element={<SalePage />} />
         <Route path="/item" element={<ItemPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/tiktok" element={<TikTokPage />} />
       </Routes>
     </>
   );
